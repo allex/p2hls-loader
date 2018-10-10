@@ -1,0 +1,56 @@
+{
+  "name": "hls-loader",
+  "description": "P2P loader for hls.js integration.",
+  "version": "0.0.1",
+  "author": "Allex Wang <allex.wxn@gmail.com>",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "keywords": [
+    "p2p",
+    "peer-to-peer",
+    "hls",
+    "webrtc",
+    "video",
+    "mse",
+    "player",
+    "torrent",
+    "bittorrent",
+    "webtorrent",
+    "hlsjs"
+  ],
+  "scripts": {
+    "compile": "rimraf ./lib && tsc && copyfiles -f ./src/*.js ./lib && rimraf ./build && mkdirp ./build",
+    "browserify": "browserify -r ./lib/index.js:hls-loader ./lib/browser-init.js --exclude p2p-core > ./build/hls-loader.js",
+    "minify": "uglifyjs ./build/hls-loader.js -m -c --comments > ./build/hls-loader.min.js",
+    "build": "npm run compile && npm run browserify && npm run minify",
+    "lint": "tslint -c ./tslint.json -p ./tsconfig.test.json",
+    "test": "mocha -r ts-node/register test/*.test.ts"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/debug": "^0.0.30",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.5.4",
+    "@types/sinon": "^5.0.1",
+    "browserify": "^16.2.2",
+    "browserify-versionify": "^1.0.6",
+    "copyfiles": "^2.0.0",
+    "debug": "^3.0.1",
+    "mkdirp": "^0.5.1",
+    "mocha": "^5.2.0",
+    "rimraf": "^2.6.1",
+    "sinon": "^6.1.4",
+    "ts-mockito": "^2.3.0",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.5.0",
+    "typescript": "^2.7.2",
+    "uglify-js": "^3.3.12"
+  },
+  "license": "MIT",
+  "browserify": {
+    "transform": [
+      "browserify-versionify"
+    ]
+  }
+}

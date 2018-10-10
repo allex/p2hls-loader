@@ -1,0 +1,109 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="stylesheet" href="//s2.analysys.cn/libs/??normalize/6.0.0/normalize.min.css,font-awesome/4.7.0/css/font-awesome.min.css,-/@analysys/reset.css@1.0.0">
+
+  <script src="//s1.hitv.com/libs/??es6-weakmap/1.0.0/index.js"></script>
+  <script src="//s2.hitv.com/libs/??jquery/1.12.4/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.js"></script>
+	<!--<script src="http://local/webrtc/hls.js/dist/hls.js"></script>-->
+
+  <script src="../node_modules/p2p-core/build/p2p-core.js"></script>
+  <script src="../build/hls-loader.js"></script>
+
+  <style>
+    body { padding: 10px; line-height: 1.2; }
+    ul { list-style-type: disc; padding-left: 20px; margin: 10px 0; }
+    #video { max-width: 320px; }
+    #inf { margin-top: 20px; }
+    .peers, .info { font-size: 11px; font-family: inherit; }
+    .sts { }
+  </style>
+
+</head>
+<body>
+
+  <video id="video" controls muted></video>
+
+  <div id="inf">
+    <h3>Info</h3>
+    <pre class="info"></pre>
+    <h3>Peers</h3>
+    <ul class="peers"></ul>
+    <h3>Streams</h3>
+    <ul class="sts"></ul>
+  </div>
+
+  <script>
+    if (Hls.isSupported() && P2PHls.isSupported()) {
+
+      var engine = new P2PHls.Engine({
+        xhrLoader: Hls.DefaultConfig.loader,
+        loader: {
+          trackerAnnounce: ["ws://local:8000/"],
+        }
+      });
+
+      $('.info').text(`
+HLS.js: v${Hls.version}
+P2P Client: v${P2PHls.version}
+Peer Id: ${engine.peerId}
+      `);
+
+      const peers = new Map
+      const updatePeersUI = () => {
+        $('.peers').html(
+          Array.from(peers.values()).map(p => `<li>${p.id} (${p.remoteAddress}:${p.remotePort})</li>`)
+        )
+      };
+
+      const Events = P2PHls.Events;
+
+      engine.on(Events.PeerConnect, peer => {
+        peers.set(peer.id, peer)
+        updatePeersUI()
+      });
+      engine.on(Events.PeerClose, id => {
+        peers.delete(id)
+        updatePeersUI()
+      });
+
+      let downloadStats = []
+      let downloadTotals = []
+      engine.on(Events.PieceBytesLoaded, (method, size) => {
+        downloadStats.push({method: method, size: size, timestamp: performance.now()});
+        downloadTotals[method] += size;
+      });
+
+      let uploadStats = []
+      let uploadTotal = 0;
+      engine.on(Events.PieceBytesUploaded, (method, size) => {
+        uploadStats.push({size: size, timestamp: performance.now()});
+        uploadTotal += size;
+      });
+
+      var hls = new Hls({
+        liveSyncDurationCount: 7, // To have at least 7 segments in queue
+        loader: engine.loaderCreator(),
+        debug: false
+      });
+
+      P2PHls.initHlsJsPlayer(hls);
+
+      // hls.loadSource("https://akamai-axtest.akamaized.net/routes/lapd-v1-acceptance/www_c4/Manifest.m3u8");
+      // hls.loadSource('http://local/st/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8');
+      hls.loadSource('http://10.1.172.163/st/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8');
+
+      let video = document.getElementById("video");
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED,function(event, data) {
+        video.play();
+      });
+
+    } else {
+      document.write("Not supported :(");
+    }
+  </script>
+
+</body></html>
