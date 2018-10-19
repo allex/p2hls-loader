@@ -1,7 +1,5 @@
-/// <reference path="./globals.d.ts" />
-
-import {Segment} from "p2p-core";
-import {SegmentManager} from './segment-manager';
+import {Segment} from "@hitv/p2p-core";
+import {SegmentManager} from "./segment-manager";
 
 const DEFAULT_DOWNLOAD_SPEED = 12500; // bytes per millisecond
 
@@ -15,14 +13,14 @@ export class HlsLoaderImpl {
   private _ctx: hlsjs.Context | undefined;
   private _cfg: HlsLoaderImplSettings;
 
-  get _xhr(): hlsjs.IXhrLoader{
+  get _xhr(): hlsjs.IXhrLoader {
     const cfg = this._cfg;
     return this._x || (this._x = new cfg.xhrLoader(cfg));
   }
 
   constructor(cfg: HlsLoaderImplSettings) {
-    if (typeof cfg.xhrLoader !== 'function') {
-      throw new Error('XHR loader required.');
+    if (typeof cfg.xhrLoader !== "function") {
+      throw new Error("XHR loader required.");
     }
     this._cfg = cfg;
   }
@@ -35,8 +33,8 @@ export class HlsLoaderImpl {
       const stats = { trequest: now, tfirst: now, loaded: 0, tload: 0, total: 0 };
       this._cfg.segmentMgr.loadSegment(url, {
         onSuccess: (segment: Segment) => {
-          let { data, downloadSpeed } = segment;
-          data = data!.slice(0);
+          const downloadSpeed = segment.downloadSpeed;
+          const data = segment.data!.slice(0);
           const downloadTime = data.byteLength / ((downloadSpeed <= 0) ? DEFAULT_DOWNLOAD_SPEED : downloadSpeed);
           const len = data.byteLength;
           stats.tload = Math.max(stats.tfirst, performance.now());
@@ -45,14 +43,10 @@ export class HlsLoaderImpl {
           callbacks.onSuccess({ url, data }, stats, context);
         },
         onError: (error: any) => {
-          if (error.code === 'P2P_404') {
-            this._xhr.load(context, config, callbacks);
-          } else {
-            callbacks.onError(error, context);
-          }
+          this._xhr.load(context, config, callbacks);
         },
         onTimeout: (stats: any) => {
-          callbacks.onTimeout(stats, context);
+          this._xhr.load(context, config, callbacks);
         }
       });
     } else {

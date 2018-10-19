@@ -1,5 +1,5 @@
 {
-  "name": "hls-loader",
+  "name": "@hitv/hls-loader",
   "description": "P2P loader for hls.js integration.",
   "version": "0.0.1",
   "author": "Allex Wang <allex.wxn@gmail.com>",
@@ -8,49 +8,47 @@
   "keywords": [
     "p2p",
     "peer-to-peer",
-    "hls",
     "webrtc",
-    "video",
-    "mse",
-    "player",
     "torrent",
     "bittorrent",
     "webtorrent",
+    "video",
+    "mse",
+    "player",
+    "hls",
     "hlsjs"
   ],
   "scripts": {
-    "compile": "rimraf ./lib && tsc && copyfiles -f ./src/*.js ./lib && rimraf ./build && mkdirp ./build",
-    "browserify": "browserify -r ./lib/index.js:hls-loader ./lib/browser-init.js --exclude p2p-core > ./build/hls-loader.js",
-    "minify": "uglifyjs ./build/hls-loader.js -m -c --comments > ./build/hls-loader.min.js",
-    "build": "npm run compile && npm run browserify && npm run minify",
-    "lint": "tslint -c ./tslint.json -p ./tsconfig.test.json",
-    "test": "mocha -r ts-node/register test/*.test.ts"
+    "build": "rimraf ./lib && mkdirp ./lib && rollup-worker -c && cp -rf types lib/",
+    "lint": "tslint -p ./tsconfig.json src/**/*.ts",
+    "test": "mocha -r ts-node/register test/*.test.ts",
+    "precommit": "npm run lint && npm test",
+    "prepare": "npm run build"
   },
   "dependencies": {
+    "@hitv/p2p-core": "^0.0.1",
+    "@hitv/p2p-util": "^1.0.1"
   },
   "devDependencies": {
-    "@types/debug": "^0.0.30",
+    "@allex/rollup-plugin-node-globals": "^0.0.2",
+    "@babel/core": "latest",
+    "@babel/preset-env": "latest",
+    "@babel/runtime": "latest",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.4",
-    "@types/sinon": "^5.0.1",
-    "browserify": "^16.2.2",
-    "browserify-versionify": "^1.0.6",
-    "copyfiles": "^2.0.0",
-    "debug": "^3.0.1",
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.1",
-    "sinon": "^6.1.4",
+    "rollup-plugin-babel": "beta",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-typescript2": "^0.17.1",
     "ts-mockito": "^2.3.0",
     "ts-node": "^7.0.0",
     "tslint": "^5.5.0",
-    "typescript": "^2.7.2",
-    "uglify-js": "^3.3.12"
+    "typescript": "^3"
   },
   "license": "MIT",
-  "browserify": {
-    "transform": [
-      "browserify-versionify"
-    ]
-  }
+  "files": [
+    "lib"
+  ]
 }

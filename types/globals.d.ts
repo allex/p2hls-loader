@@ -27,7 +27,7 @@ declare namespace hlsjs {
   }
 
   // Adapter for hls.js level interface
-  export interface ILevel {
+  interface ILevel {
     averagetargetduration: number,
     endCC: number,
     endSN: number,
@@ -48,6 +48,8 @@ declare namespace hlsjs {
   }
 
   type Response = { url: string, data?: any }
+  type IXhrLoader = IHlsLoader;
+  type Context = { url: string, frag: boolean }
 
   interface Callbacks {
     onSuccess(response: Response, stats: any, context: any, xhr?: any): void;
@@ -59,12 +61,5 @@ declare namespace hlsjs {
     load(context: any, config: any, callbacks: Callbacks): void;
     abort(): void;
     destroy(): void;
-  }
-
-  type IXhrLoader = IHlsLoader;
-
-  type Context = {
-    url: string,
-    frag: boolean
   }
 }

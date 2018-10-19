@@ -1,10 +1,9 @@
-/// <reference path="./globals.d.ts" />
+/// <reference path="../types/globals.d.ts" />
 
-import * as Debug from "debug";
 import {EventEmitter} from "events";
-import {Events, SegmentLoader} from "p2p-core";
-import {pipeEvents} from "p2p-core/lib/utils";
-import {SegmentManager} from "./segment-manager";
+import {Events, SegmentLoader} from "@hitv/p2p-core";
+import {pipeEvents, createDebug} from "@hitv/p2p-util";
+import {SegmentManager, PlaylistInfo} from "./segment-manager";
 import {HlsLoaderImpl} from "./hlsjs-loader";
 
 type ILevel = hlsjs.ILevel;
@@ -18,26 +17,13 @@ type EngineSettings = {
   segments?: any
 };
 
-const debug = Debug('p2phls:engine');
+const debug = createDebug("p2phls:engine");
 
-const version = "__VERSION__";
+export const version = "__VERSION__";
 
-const isSupported = (): boolean => {
-  return SegmentLoader.isSupported();
-};
+export const isSupported = (): boolean => SegmentLoader.isSupported();
 
-const initHlsJsPlayer = (hlsObj: any): void => {
-  if (hlsObj && hlsObj.config && hlsObj.config.loader && typeof hlsObj.config.loader.getEngine === "function") {
-    initHlsJsEvents(hlsObj, hlsObj.config.loader.getEngine());
-  }
-};
-
-export {
-  version,
-  Events,
-  isSupported,
-  initHlsJsPlayer
-};
+export { Events };
 
 export class Engine extends EventEmitter {
   private readonly _prefs: EngineSettings;
@@ -48,8 +34,11 @@ export class Engine extends EventEmitter {
     return this._loader.peerId;
   }
 
-  get settings(): EngineSettings {
-    return this._prefs;
+  get settings(): any {
+    return {
+      loader: this._loader.getSettings(),
+      segments: this._segmgr.getSettings()
+    };
   }
 
   get segmentMgr(): SegmentManager {
@@ -61,7 +50,7 @@ export class Engine extends EventEmitter {
   }
 
   constructor(settings: EngineSettings) {
-    debug('hls-loader initialized. (v%s)', version);
+    debug("hls-loader initialized. (v%s)", version);
 
     super();
 
@@ -76,74 +65,78 @@ export class Engine extends EventEmitter {
     pipeEvents(this, p2pLoader, Object.values(Events));
   }
 
-  loaderCreator(): HlsLoaderClass {
-    return hlsLoaderFactory(HlsLoaderImpl, this);
+  attach(hlsObj: any): void {
+    if (!hlsObj) {
+      throw new Error("Invalid HLS.js instance to attaching.");
+    }
+    initHlsJsEvents(hlsObj, this);
   }
 
-  getSettings(): any {
-    return {
-      segments: this._segmgr.getSettings(),
-      loader: this._loader.getSettings()
-    };
+  loaderCreator(): HlsLoaderClass {
+    return hlsLoaderFactory(HlsLoaderImpl, this);
   }
 
   syncSegment(url: string) {
     this._segmgr.syncSegment(url);
   }
 
-  setPlaylists(list: ILevel[]) {
-    return this._segmgr.setPlaylists(list)
+  setPlaylists(e: PlaylistInfo) {
+    return this._segmgr.setPlaylists(e);
   }
 
   destroy() {
     this._loader.destroy();
     this._segmgr.destroy();
   }
-};
+}
 
 function hlsLoaderFactory (LoaderImpl: Newable<any>, engine: Engine): HlsLoaderClass {
   const { segmentMgr, xhrLoader } = engine;
   const L = <any> ((config: any): IHlsLoader => {
-    return new LoaderImpl({ segmentMgr, xhrLoader, ...config })
+    return new LoaderImpl({ segmentMgr, xhrLoader, ...config });
   });
   L.getEngine = () => engine;
   return <HlsLoaderClass>L;
 }
 
-function initHlsJsEvents(hlsObj: any, engine: Engine): void {
-  const Hls = hlsObj.constructor
+// EventArgs of hls.js
+interface ILevelLoadedArgs { details: ILevel; level: number; id: number; stats: any; networkDetails: any; }
+interface IManifestLoadedArgs { levels: ILevel[]; url: string | null; stats: any; networkDetails: any | null; }
+
+function initHlsJsEvents(hls: any, engine: Engine): void {
+  const Hls = hls.constructor;
   const { Events: HLSEvents } = Hls;
 
-  hlsObj.on(HLSEvents.MANIFEST_PARSED, (type: string, e: {
-    levels: ILevel[],
-    firstLevel: number,
-    stats: any,
-    audio: boolean,
-    video: boolean,
-    altAudio: boolean
-  }) => {
-    debug('hlsjs manifest parsed: %o', e);
-  })
+  const handleLevelLoaded = (e: any) => {
+    const info: any = { ...e };
+    info.levels = [ info.details ];
+    delete info.details;
+    engine.setPlaylists(info);
+  };
 
-  hlsObj.on(HLSEvents.MANIFEST_LOADED, (type: string, e: {
-    levels: ILevel[],
-    url: string | null,
-    stats: any,
-    networkDetails: any | null
-  }) => {
-    engine.setPlaylists(e.levels.map(o => o.details))
+  hls.on(HLSEvents.MANIFEST_PARSED, (type: string, e: any) => {
+    debug("hls.js manifest parsed: %o", e);
   });
 
-  hlsObj.on(HLSEvents.FRAG_CHANGED, (type: string, data: any) => {
+  hls.on(HLSEvents.MANIFEST_LOADED, (type: string, e: IManifestLoadedArgs) => {
+    debug("hls.js manifest loaded: %o", e);
+  });
+
+  hls.on(HLSEvents.LEVEL_LOADED, (type: string, e: ILevelLoadedArgs) => {
+    debug("hls.js level loaded: %o", e);
+    handleLevelLoaded(e);
+  });
+
+  hls.on(HLSEvents.FRAG_CHANGED, (type: string, data: any) => {
     const url = data && data.frag ? data.frag.url : undefined;
     engine.syncSegment(url);
   });
 
-  hlsObj.on(HLSEvents.DESTROYING, () => {
+  hls.on(HLSEvents.DESTROYING, () => {
     engine.destroy();
   });
 
-  hlsObj.on(HLSEvents.ERROR, (type: string, e: any) => {
-    console.error(type, e)
-  })
+  hls.on(HLSEvents.ERROR, (type: string, e: any) => {
+    console.error(type, e, e.err);
+  });
 }
