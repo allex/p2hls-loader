@@ -8,7 +8,7 @@
 export async function fetchAny<T = string>(url: string, responseType: XMLHttpRequestResponseType): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
+    xhr.open('GET', url, true);
     xhr.responseType = responseType;
     xhr.onreadystatechange = () => {
       if (xhr.readyState !== 4) { return; }
@@ -23,9 +23,9 @@ export async function fetchAny<T = string>(url: string, responseType: XMLHttpReq
 }
 
 export async function fetchText(url: string): Promise<string> {
-  return fetchAny(url, "text");
+  return fetchAny(url, 'text');
 }
 
 export async function fetchBuffer(url: string): Promise<ArrayBuffer> {
-  return fetchAny<ArrayBuffer>(url, "arraybuffer");
+  return fetchAny<ArrayBuffer>(url, 'arraybuffer');
 }

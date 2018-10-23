@@ -1,12 +1,12 @@
-import {Segment} from "@hitv/p2p-core";
-import {SegmentManager} from "./segment-manager";
+import {Segment} from '@hitv/p2p-core';
+import {SegmentManager} from './segment-manager';
 
 const DEFAULT_DOWNLOAD_SPEED = 12500; // bytes per millisecond
 
-type HlsLoaderImplSettings = {
-  segmentMgr: SegmentManager,
-  xhrLoader: Newable<hlsjs.IXhrLoader>
-};
+interface HlsLoaderImplSettings {
+  segmentMgr: SegmentManager;
+  xhrLoader: Newable<hlsjs.IXhrLoader>;
+}
 
 export class HlsLoaderImpl {
   private _x: any;
@@ -19,8 +19,8 @@ export class HlsLoaderImpl {
   }
 
   constructor(cfg: HlsLoaderImplSettings) {
-    if (typeof cfg.xhrLoader !== "function") {
-      throw new Error("XHR loader required.");
+    if (typeof cfg.xhrLoader !== 'function') {
+      throw new Error('XHR loader required.');
     }
     this._cfg = cfg;
   }

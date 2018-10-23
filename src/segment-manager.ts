@@ -1,35 +1,35 @@
-import {Segment, ILoader, ILoaderCallbacks} from "@hitv/p2p-core";
-import {isAbsUrl, hash, createDebug} from "@hitv/p2p-util";
-import {Playlist} from "./playlist";
+import {Segment, ILoader, ILoaderCallbacks} from '@hitv/p2p-core';
+import {isAbsUrl, hash, createDebug} from '@hitv/p2p-util';
+import {Playlist} from './playlist';
 
-const debug = createDebug("p2phls:segment-manager");
+const debug = createDebug('p2phls:segment-manager');
 
 type ILevel = hlsjs.ILevel;
 type SwarmIdGenerator = (url: string, options?: any) => string;
-type Settings = {
+interface Settings {
   /* Number of segments for building up predicted forward segments sequence; used to predownload and share via P2P */
-  prefetchCount: number,
-  swarmId: SwarmIdGenerator
-};
+  prefetchCount: number;
+  swarmId: SwarmIdGenerator;
+}
 
 const defaultSettings: Settings = {
   prefetchCount: 10,
-  swarmId: (url: string, options: any = {}): string => url.split("?")[0]
+  swarmId: (url: string, options: any = {}): string => url.split('?')[0]
 };
 
 const genSegId = (swarmId: string, sn: number): string => `${swarmId}+${sn}`;
 
-export type PlaylistInfo = {
-  levels: ILevel[],
-  url: string | null
-};
+export interface PlaylistInfo {
+  levels: ILevel[];
+  url: string | null;
+}
 
 export class SegmentManager {
 
   private master: Playlist | null = null; // Optional store master playlist
   private playlists: Map<string, Playlist> = new Map(); // Cache all of the variant playlist
-  private _queue: { sn: number, url: string }[] = [];
-  private _current: { url: string, playlist: string } = { url: "", playlist: "" };
+  private _queue: Array<{ sn: number, url: string }> = [];
+  private _current: { url: string, playlist: string } = { url: '', playlist: '' };
   private _genSwarmId: SwarmIdGenerator;
   private readonly _prefs: Settings;
   private readonly _loader: ILoader;
@@ -49,7 +49,7 @@ export class SegmentManager {
     const { url, levels } = info;
 
     if (!levels) {
-      debug("Invalid HLS.js playlist info", info);
+      debug('Invalid HLS.js playlist info', info);
       return this;
     }
 
@@ -59,14 +59,14 @@ export class SegmentManager {
       const playlists: Playlist[] = [];
       const manifest = { playlists };
 
-      levels.forEach(level => {
+      levels.forEach((level) => {
         const ls = Playlist.from(level);
         this.playlists.set(ls.url, ls);
         playlists.push(ls);
       });
 
       this.master = new Playlist(url, manifest);
-      this.playlists.forEach(ls => ls.swarmId = this.getSwarmId(ls.url));
+      this.playlists.forEach((ls) => ls.swarmId = this.getSwarmId(ls.url));
 
     } else {
       const level: ILevel = levels[0];
@@ -86,7 +86,7 @@ export class SegmentManager {
   loadSegment(url: string, callbacks: ILoaderCallbacks): void {
     const loc = this.getSegmentLoc(url);
     if (!loc) {
-      callbacks.onError({ message: "Segment location not found.", code: "P2P_404" });
+      callbacks.onError({ message: 'Segment location not found.', code: 'P2P_404' });
       return;
     }
 
@@ -104,7 +104,7 @@ export class SegmentManager {
     const id = genSegId(swarmId, sn);
     const segment = Segment.new(id, url);
 
-    debug("[%s] fetch segment: %s", swarmId, url);
+    debug('[%s] fetch segment: %s', swarmId, url);
 
     this._current = { url, playlist: playlist.url };
     this._loader.load(segment, { swarmId }, callbacks);
@@ -116,8 +116,8 @@ export class SegmentManager {
    * Update the play _queue in order to sync with the player real segment.
    */
   syncSegment(url: string): void {
-    debug("sync segment: %s", url);
-    const urlIndex = this._queue.findIndex(segment => segment.url === url);
+    debug('sync segment: %s', url);
+    const urlIndex = this._queue.findIndex((segment) => segment.url === url);
     if (urlIndex >= 0) {
       this._queue = this._queue.slice(urlIndex);
       this.updateSegments();
@@ -125,7 +125,7 @@ export class SegmentManager {
   }
 
   abortSegment(url: string): void {
-    debug("abort segment: %s", url);
+    debug('abort segment: %s', url);
     this._loader.abort(url);
   }
 
@@ -157,7 +157,7 @@ export class SegmentManager {
       const playlist = entry.value;
       const index = playlist.indexOf(url);
       if (index >= 0) {
-        return { playlist: playlist, index: index };
+        return { playlist, index };
       }
     }
 

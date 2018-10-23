@@ -1,58 +1,45 @@
 {
-  "rules": {
-    "class-name": true,
-    "indent": [
-      true,
-      "spaces",
-      2
-    ],
-    "one-line": [
-      true,
-      "check-else",
-      "check-open-brace",
-      "check-whitespace"
-    ],
-    "no-var-keyword": true,
-    "quotemark": [
-      true,
-      "double",
-      "avoid-escape"
-    ],
-    "semicolon": [
-      true,
-      "always",
-      "ignore-bound-class-methods"
-    ],
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-type"
-    ],
-    "typedef-whitespace": [
-      true,
-      {
-        "call-signature": "nospace",
-        "index-signature": "nospace",
-        "parameter": "nospace",
-        "property-declaration": "nospace",
-        "variable-declaration": "nospace"
-      },
-      {
-        "call-signature": "onespace",
-        "index-signature": "onespace",
-        "parameter": "onespace",
-        "property-declaration": "onespace",
-        "variable-declaration": "onespace"
-      }
-    ],
-    "no-internal-module": true,
-    "no-trailing-whitespace": true,
-    "prefer-const": true,
-    "jsdoc-format": true,
-    "eofline": true
+  "jsRules": {
+    "object-literal-sort-keys": false,
+    "one-line": [false],
+    "curly": false,
+    "no-console": [false],
+    "max-line-length": [false],
+    "indent": [true, "spaces"]
   },
-  "defaultSeverity": "warning"
+  "extends" : [
+    "tslint:recommended"
+  ],
+  "rules": {
+    "forin": false,
+    "interface-name": [true],
+    "no-console": [false],
+    "indent": [true, "spaces"],
+    "variable-name":
+    [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-pascal-case",
+      "allow-leading-underscore"
+    ],
+    "one-line": [false],
+    "max-line-length": [false],
+    "object-literal-sort-keys": false,
+    "curly": false,
+    "ordered-imports": [ false ],
+    "only-arrow-functions": [ false ],
+    "class-name": true,
+    "interface-name": false,
+    "max-classes-per-file": false,
+    "quotemark": [true, "single", "avoid-escape", "jsx-double"],
+    "trailing-comma": false,
+    "no-reference": false,
+    "no-empty": [true, "allow-empty-catch", "allow-empty-functions"],
+    "no-conditional-assignment": false,
+    "one-variable-per-declaration": false,
+    "member-access": [true, "no-public"],
+    "triple-equals": [true, "allow-null-check"],
+    "no-shadowed-variable": false
+  }
 }

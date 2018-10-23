@@ -1,25 +1,25 @@
 /// <reference path="../types/globals.d.ts" />
 
-import {EventEmitter} from "events";
-import {Events, SegmentLoader} from "@hitv/p2p-core";
-import {pipeEvents, createDebug} from "@hitv/p2p-util";
-import {SegmentManager, PlaylistInfo} from "./segment-manager";
-import {HlsLoaderImpl} from "./hlsjs-loader";
+import {EventEmitter} from 'events';
+import {Events, SegmentLoader} from '@hitv/p2p-core';
+import {pipeEvents, createDebug} from '@hitv/p2p-util';
+import {SegmentManager, PlaylistInfo} from './segment-manager';
+import {HlsLoaderImpl} from './hlsjs-loader';
 
 type ILevel = hlsjs.ILevel;
 type IHlsLoader = hlsjs.IHlsLoader;
 
 type HlsLoaderClass = Newable<hlsjs.IXhrLoader>;
 
-type EngineSettings = {
-  xhrLoader: HlsLoaderClass,
-  loader: any,
-  segments?: any
-};
+interface EngineSettings {
+  xhrLoader: HlsLoaderClass;
+  loader: any;
+  segments?: any;
+}
 
-const debug = createDebug("p2phls:engine");
+const debug = createDebug('p2phls:engine');
 
-export const version = "__VERSION__";
+export const version = '__VERSION__';
 
 export const isSupported = (): boolean => SegmentLoader.isSupported();
 
@@ -50,7 +50,7 @@ export class Engine extends EventEmitter {
   }
 
   constructor(settings: EngineSettings) {
-    debug("hls-loader initialized. (v%s)", version);
+    debug('hls-loader initialized. (v%s)', version);
 
     super();
 
@@ -67,7 +67,7 @@ export class Engine extends EventEmitter {
 
   attach(hlsObj: any): void {
     if (!hlsObj) {
-      throw new Error("Invalid HLS.js instance to attaching.");
+      throw new Error('Invalid HLS.js instance to attaching.');
     }
     initHlsJsEvents(hlsObj, this);
   }
@@ -90,13 +90,13 @@ export class Engine extends EventEmitter {
   }
 }
 
-function hlsLoaderFactory (LoaderImpl: Newable<any>, engine: Engine): HlsLoaderClass {
+function hlsLoaderFactory(LoaderImpl: Newable<any>, engine: Engine): HlsLoaderClass {
   const { segmentMgr, xhrLoader } = engine;
-  const L = <any> ((config: any): IHlsLoader => {
+  const L = ((config: any): IHlsLoader => {
     return new LoaderImpl({ segmentMgr, xhrLoader, ...config });
-  });
+  }) as any;
   L.getEngine = () => engine;
-  return <HlsLoaderClass>L;
+  return L as HlsLoaderClass;
 }
 
 // EventArgs of hls.js
@@ -115,15 +115,15 @@ function initHlsJsEvents(hls: any, engine: Engine): void {
   };
 
   hls.on(HLSEvents.MANIFEST_PARSED, (type: string, e: any) => {
-    debug("hls.js manifest parsed: %o", e);
+    debug('hls.js manifest parsed: %o', e);
   });
 
   hls.on(HLSEvents.MANIFEST_LOADED, (type: string, e: IManifestLoadedArgs) => {
-    debug("hls.js manifest loaded: %o", e);
+    debug('hls.js manifest loaded: %o', e);
   });
 
   hls.on(HLSEvents.LEVEL_LOADED, (type: string, e: ILevelLoadedArgs) => {
-    debug("hls.js level loaded: %o", e);
+    debug('hls.js level loaded: %o', e);
     handleLevelLoaded(e);
   });
 

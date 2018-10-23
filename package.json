@@ -21,21 +21,23 @@
   "scripts": {
     "build": "rimraf ./lib && mkdirp ./lib && rollup-worker -c && cp -rf types lib/",
     "lint": "tslint -p ./tsconfig.json src/**/*.ts",
-    "test": "mocha -r ts-node/register test/*.test.ts",
+    "lint:fix": "tslint -p ./tsconfig.json src/**/*.ts --fix",
     "precommit": "npm run lint && npm test",
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hitv/p2p-core": "^0.0.1",
-    "@hitv/p2p-util": "^1.0.1"
+    "@hitv/p2p-core": "^0.0.3",
+    "@hitv/p2p-util": "^1.0.3"
   },
   "devDependencies": {
     "@allex/rollup-plugin-node-globals": "^0.0.2",
+    "@allex/typescript": "^3",
     "@babel/core": "latest",
     "@babel/preset-env": "latest",
     "@babel/runtime": "latest",
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.4",
+    "husky": "^1.1.2",
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.1",
@@ -44,8 +46,7 @@
     "rollup-plugin-typescript2": "^0.17.1",
     "ts-mockito": "^2.3.0",
     "ts-node": "^7.0.0",
-    "tslint": "^5.5.0",
-    "typescript": "^3"
+    "tslint": "^5.5.0"
   },
   "license": "MIT",
   "files": [

@@ -62,6 +62,9 @@ export default {
     },
     replace: {
       __VERSION__: version
+    },
+    typescript: {
+      typescript: require('@allex/typescript')
     }
   },
   entry: [
