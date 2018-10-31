@@ -39,6 +39,12 @@
         xhrLoader: Hls.DefaultConfig.loader,
         loader: {
           trackerAnnounce: ["ws://local:8000/"],
+          rtcConfig: {
+            iceServers: [
+              { urls: 'stun:stun.hitv.com' },
+              { urls: 'stun:stun.voxox.com' }
+            ]
+          }
         }
       });
 
