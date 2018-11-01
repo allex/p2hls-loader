@@ -4,7 +4,7 @@ import {EventEmitter} from 'events';
 import {Events, SegmentLoader} from '@hitv/p2p-core';
 import {pipeEvents, createDebug} from '@hitv/p2p-util';
 import {SegmentManager, PlaylistInfo} from './segment-manager';
-import {HlsLoaderImpl} from './hlsjs-loader';
+import {HlsLoaderImpl} from './hls-loader';
 
 type ILevel = hlsjs.ILevel;
 type IHlsLoader = hlsjs.IHlsLoader;
