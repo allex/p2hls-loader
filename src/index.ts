@@ -87,6 +87,7 @@ export class Engine extends EventEmitter {
   destroy() {
     this._loader.destroy();
     this._segmgr.destroy();
+    this.removeAllListeners();
   }
 }
 
