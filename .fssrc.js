@@ -54,6 +54,7 @@ export default {
     },
     resolve: {
       alias: {
+        'debug': path.resolve('./node_modules/debug/src/browser.js'),
         'readable-stream': require.resolve('rollup-plugin-node-builtins/src/es6/stream.js')
       }
     },
