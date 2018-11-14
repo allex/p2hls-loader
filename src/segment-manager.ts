@@ -106,8 +106,19 @@ export class SegmentManager {
 
     debug('[%s] fetch segment: %s', swarmId, url);
 
+    const wrapCallback = (callbacks: ILoaderCallbacks, cbName: keyof ILoaderCallbacks) => (...args: any[]) => {
+      this.renewQueue(url);
+      const f = callbacks[cbName];
+      if (f) return f(...args);
+    };
+
+    const cbs = Object.keys(callbacks).reduce((p: any, k: string) => {
+      p[k] = wrapCallback(callbacks, k);
+      return p;
+    }, {});
+
     this._current = { url, playlist: playlist.url };
-    this._loader.load(segment, { swarmId }, callbacks);
+    this._loader.load(segment, { swarmId }, cbs);
     this._queue.push({ url, sn });
     this.loadSegments(playlist, index);
   }
@@ -117,9 +128,10 @@ export class SegmentManager {
    */
   syncSegment(url: string): void {
     debug('sync segment: %s', url);
-    const urlIndex = this._queue.findIndex((segment) => segment.url === url);
-    if (urlIndex >= 0) {
-      this._queue = this._queue.slice(urlIndex);
+    if (this._queue.length) {
+      this._loader.abort(url);
+    }
+    if (this.renewQueue(url)) {
       this.updateSegments();
     }
   }
@@ -127,6 +139,7 @@ export class SegmentManager {
   abortSegment(url: string): void {
     debug('abort segment: %s', url);
     this._loader.abort(url);
+    this.renewQueue(url);
   }
 
   destroy(): void {
@@ -134,6 +147,16 @@ export class SegmentManager {
     this.master = null;
     this.playlists.clear();
     this._queue = [];
+  }
+
+  private renewQueue(url: string): boolean {
+    const q = this._queue;
+    const idx = q.findIndex((s) => s.url === url);
+    if (idx >= 0) {
+      this._queue = q.slice(idx + 1);
+      return true;
+    }
+    return false;
   }
 
   private updateSegments(): void {

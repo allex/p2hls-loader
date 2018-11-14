@@ -54,8 +54,8 @@ export class Engine extends EventEmitter {
 
     super();
 
-    const { loader, segments } = settings;
-    const p2pLoader = new SegmentLoader({ ...loader });
+    const { loader, xhrLoader, segments } = settings;
+    const p2pLoader = new SegmentLoader({ ...loader, xhrLoader });
 
     this._prefs = settings;
     this._loader = p2pLoader;

@@ -1,12 +1,12 @@
 import {Segment} from '@hitv/p2p-core';
 import {SegmentManager} from './segment-manager';
 
-const DEFAULT_DOWNLOAD_SPEED = 12500; // bytes per millisecond
-
 interface HlsLoaderImplSettings {
   segmentMgr: SegmentManager;
   xhrLoader: Newable<hlsjs.IXhrLoader>;
 }
+
+const now = (performance && (() => performance.now())) || Date.now || (() => +new Date); /* tslint:disable-line */
 
 export class HlsLoaderImpl {
   private _x: any;
@@ -29,17 +29,23 @@ export class HlsLoaderImpl {
     this._ctx = context;
     const { url, frag } = context;
     if (frag) {
-      const now = performance.now();
-      const stats = { trequest: now, tfirst: now, loaded: 0, tload: 0, total: 0 };
+      const startTime = now();
+      const stats = { trequest: startTime, tfirst: startTime, loaded: 0, tload: 0, total: 0, speed: 0 };
       this._cfg.segmentMgr.loadSegment(url, {
         onSuccess: (segment: Segment) => {
-          const downloadSpeed = segment.downloadSpeed;
           const data = segment.data!.slice(0);
-          const downloadTime = data.byteLength / ((downloadSpeed <= 0) ? DEFAULT_DOWNLOAD_SPEED : downloadSpeed);
-          const len = data.byteLength;
-          stats.tload = Math.max(stats.tfirst, performance.now());
-          stats.trequest = Math.max(stats.tfirst, now - downloadTime);
-          stats.loaded = stats.total = len;
+          const timeStamp = now();
+          const timeElapsed = timeStamp - startTime;
+          let speed = segment.downloadSpeed;
+          if (speed <= 0) {
+            speed = data.byteLength / timeElapsed;
+          }
+          const size = data.byteLength;
+          const downloadTime = size / speed;
+          stats.tload = Math.max(stats.tfirst, now());
+          stats.trequest = Math.max(stats.tfirst, startTime - downloadTime);
+          stats.loaded = stats.total = size;
+          stats.speed = speed * 1000 / 1024 ; // 'kb/s';
           callbacks.onSuccess({ url, data }, stats, context);
         },
         onError: (error: any) => {
