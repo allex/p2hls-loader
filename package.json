@@ -26,7 +26,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hitv/p2p-core": "^0.0.5",
+    "@hitv/p2p-core": "^0.0.8",
     "@hitv/p2p-util": "^1.0.4"
   },
   "devDependencies": {
