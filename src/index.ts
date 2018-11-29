@@ -41,7 +41,7 @@ export class Engine extends EventEmitter {
     };
   }
 
-  get segmentMgr(): SegmentManager {
+  get segMgr(): SegmentManager {
     return this._segmgr;
   }
 
@@ -92,9 +92,9 @@ export class Engine extends EventEmitter {
 }
 
 function hlsLoaderFactory(LoaderImpl: Newable<any>, engine: Engine): HlsLoaderClass {
-  const { segmentMgr, xhrLoader } = engine;
+  const { segMgr, xhrLoader } = engine;
   const L = ((config: any): IHlsLoader => {
-    return new LoaderImpl({ segmentMgr, xhrLoader, ...config });
+    return new LoaderImpl({ segMgr, xhrLoader, ...config });
   }) as any;
   L.getEngine = () => engine;
   return L as HlsLoaderClass;

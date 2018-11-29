@@ -2,7 +2,7 @@ import {Segment} from '@hitv/p2p-core';
 import {SegmentManager} from './segment-manager';
 
 interface HlsLoaderImplSettings {
-  segmentMgr: SegmentManager;
+  segMgr: SegmentManager;
   xhrLoader: Newable<hlsjs.IXhrLoader>;
 }
 
@@ -31,7 +31,7 @@ export class HlsLoaderImpl {
     if (frag) {
       const startTime = now();
       const stats = { trequest: startTime, tfirst: startTime, loaded: 0, tload: 0, total: 0, speed: 0 };
-      this._cfg.segmentMgr.loadSegment(url, {
+      this._cfg.segMgr.loadSegment(url, {
         onSuccess: (segment: Segment) => {
           const data = segment.data!.slice(0);
           const timeStamp = now();
@@ -67,7 +67,7 @@ export class HlsLoaderImpl {
   abort(): void {
     const { _ctx, _cfg, _xhr } = this;
     if (_ctx) {
-      _cfg.segmentMgr.abortSegment(_ctx.url);
+      _cfg.segMgr.abortSegment(_ctx.url);
     }
     if (_xhr) {
       _xhr.destroy();
