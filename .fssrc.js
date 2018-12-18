@@ -31,8 +31,8 @@ const plugins = [
   builtins,
   'resolve',
   typescript,
-  babel,
   'commonjs',
+  babel,
   globals
 ]
 
@@ -45,7 +45,7 @@ export default {
         ...babelrc,
         babelrc: false,
         externalHelpers: false,
-        runtimeHelpers: false
+        runtimeHelpers: true
       }
       if ([ 'es', 'cjs' ].includes(rollupCfg.output.format)) {
         cfg.comments = true

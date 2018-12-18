@@ -26,13 +26,14 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hitv/p2p-core": "^0.0.8",
-    "@hitv/p2p-util": "^1.0.4"
+    "@hitv/p2p-core": "~0",
+    "@hitv/p2p-util": "~1"
   },
   "devDependencies": {
     "@allex/rollup-plugin-node-globals": "^0.0.2",
     "@allex/typescript": "^3",
     "@babel/core": "latest",
+    "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "latest",
     "@babel/runtime": "latest",
     "@types/mocha": "^5.2.5",
@@ -41,9 +42,9 @@
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.1",
-    "rollup-plugin-babel": "beta",
+    "rollup-plugin-babel": "latest",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-typescript2": "^0.17.1",
+    "rollup-plugin-typescript2": "^0",
     "ts-mockito": "^2.3.0",
     "ts-node": "^7.0.0",
     "tslint": "^5.5.0"

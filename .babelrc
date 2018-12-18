@@ -10,5 +10,5 @@
       "exclude": [ "transform-typeof-symbol", "transform-function-name", "transform-classes" ]
     } ]
   ],
-  "plugins": []
+  "plugins": [ "@babel/plugin-transform-runtime" ]
 }
