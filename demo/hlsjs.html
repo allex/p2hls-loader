@@ -1,114 +1,277 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
   <link rel="stylesheet" href="//s2.analysys.cn/libs/??normalize/6.0.0/normalize.min.css,font-awesome/4.7.0/css/font-awesome.min.css,-/@analysys/reset.css@1.0.0">
-
   <!--[if lt IE 9]>
     <script src="//s1.hitv.com/libs/??es5-shim/4.5.10/es5-shim.min.js,es5-shim/4.5.10/es5-sham.min.js"></script>
   <![endif]-->
   <script src="//s1.hitv.com/libs/??es6-shim/0.34.2/es6-shim.min.js,es7-shim/1.0.0/es7-shim.min.js,es-promise/1.0.1/promise.polyfill.min.js,es6-weakmap/1.0.0/index.js"></script>
-
   <script src="//s2.hitv.com/libs/??jquery/1.12.4/jquery.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.js"></script>
   <script src="../lib/hls-loader.js"></script>
-
   <style>
-    body { padding: 10px; line-height: 1.2; }
-    ul { list-style-type: disc; padding-left: 20px; margin: 10px 0; }
-    #video { max-width: 320px; }
-    #inf { margin-top: 20px; }
-    .peers, .info { font-size: 11px; font-family: inherit; }
+    body {
+      line-height: 1.2; }
+    a {
+      color: #0097e0; }
+    ul {
+      list-style-type: disc; padding-left: 20px; margin: 10px 0; }
+    .full {
+      color: #fff; }
+    .full .videoCentered {
+      position: absolute;
+      width: 100%;
+      max-width: 100%;
+      top: 0;
+      z-index: -1; }
+    .innerControls {
+      display: block;
+      float: left;
+      width: 99%;
+      margin: 3px;
+      padding: 3px;
+      color: inherit;
+      border: 0;
+      background: transparent;
+      font-size: 11px; }
+    .innerControls input {
+      font-weight: normal;
+      float: right;
+      cursor: pointer; }
+    .center {
+      width: 70%;
+      min-width: 615px;
+      overflow: hidden;
+      margin-left: auto;
+      margin-right: auto;
+      display: block; }
+    .videoCentered {
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block; }
+
+    #controls {
+      width: 70%;
+      min-width: 615px;
+      padding: 3px;
+      margin: 12px auto 12px auto;
+      overflow: hidden;
+      border: 1px dashed;
+      border-radius: 3px; }
+
+    #inf {
+      margin-top: 20px; }
+    .peers, .info {
+      font-size: 11px;
+      font-family: inherit;
+      line-height: 1.3em;
+      margin-top: 3px; }
     .sts { }
   </style>
 
 </head>
 <body>
+  <div class="main-container">
 
-  <video id="video" controls muted></video>
+    <div id="controls">
+      <input id="streamURL" class="innerControls" type=text value=""/>
+      <label class="innerControls">
+        Enable HLS.js debug logging: <input id="enableDebug" type="checkbox" checked="">
+      </label>
+      <label class="innerControls">
+        Permalink:&nbsp; <span id="streamPermalink" style="width: 50%"></span>
+      </label>
+    </div>
 
-  <div id="inf">
-    <h3>Info</h3>
-    <pre class="info"></pre>
-    <h3>Peers</h3>
-    <ul class="peers"></ul>
-    <h3>Streams</h3>
-    <ul class="sts"></ul>
+    <video class="videoCentered" id="video" controls muted></video>
+
+    <div class="center" id="inf">
+      <h3>Info</h3>
+      <pre class="info"></pre>
+      <h3>Peers</h3>
+      <ul class="peers"></ul>
+      <h3>Streams</h3>
+      <ul class="sts"></ul>
+    </div>
+
   </div>
 
   <script>
-    if (Hls.isSupported() && P2Hls.isSupported()) {
 
-      var engine = new P2Hls.Engine({
-        xhrLoader: Hls.DefaultConfig.loader,
-        loader: {
-          trackerAnnounce: ["ws://ws.hitv.com"],
-          rtcConfig: {
-            iceServers: [
-              { urls: 'stun:stun.hitv.com' }
-            ]
-          },
-          maxPeersNum: 1
-        }
+    var demoConfig = getURLParam('demoConfig', null);
+    if (demoConfig) {
+      demoConfig = JSON.parse(atob(demoConfig));
+    } else {
+      demoConfig = {};
+    }
+
+    const defaultTestStreamUrl = 'http://10.1.172.163/st/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8'
+
+    let enableDebug = getDemoConfigPropOrDefault('enableDebug', true);
+    let sourceURL = decodeURIComponent(getURLParam('u', defaultTestStreamUrl));
+
+    let hls
+
+    $('#streamURL')
+      .val(sourceURL)
+      .click(function () {
+        this.select()
+      })
+      .change(() => {
+        loadSelectedStream();
       });
 
-      $('.info').text(`
-HLS.js: v${Hls.version}
+    $('#enableDebug')
+      .prop('checked', enableDebug)
+      .click(function () {
+        enableDebug = this.checked;
+        loadSelectedStream();
+      });
+
+    loadSelectedStream()
+
+    function appendLog(type, message) {
+      console.log(type, message)
+    }
+    function logStatus(message) {
+      appendLog('statusOut', message);
+    }
+    function logError(message) {
+      appendLog('errorOut', message);
+    }
+    function getDemoConfigPropOrDefault(propName, defaultVal) {
+      return typeof demoConfig[propName] !== 'undefined' ? demoConfig[propName] : defaultVal;
+    }
+    function getURLParam(sParam, defaultValue) {
+      var sPageURL = window.location.search.substring(1);
+      var sURLVariables = sPageURL.split('&');
+      for (var i = 0; i < sURLVariables.length; i++) {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam) {
+          return 'undefined' == sParameterName[1] ? undefined : 'false' == sParameterName[1] ? false : sParameterName[1];
+        }
+      }
+      return defaultValue;
+    }
+
+    function onDemoConfigChanged() {
+      var url = $('#streamURL').val();
+      demoConfig = {
+        enableDebug: enableDebug
+      };
+      var serializedDemoConfig = btoa(JSON.stringify(demoConfig));
+      var baseURL = document.URL.split('?')[0];
+      var permalinkURL = baseURL + ("?u=" + encodeURIComponent(url) + "&demoConfig=" + serializedDemoConfig);
+      $('#streamPermalink').html('<a href="' + permalinkURL + '">' + permalinkURL + '</a>');
+    }
+
+    function loadSelectedStream() {
+
+      if (!Hls.isSupported()) {
+        handleUnsupported();
+        return;
+      }
+
+      url = $('#streamURL').val();
+
+      if (!url) {
+        logError('stream url empty')
+        return
+      }
+
+      if (hls) {
+        hls.destroy();
+        if (hls.bufferTimer) {
+          clearInterval(hls.bufferTimer);
+          hls.bufferTimer = undefined;
+        }
+        hls = null;
+      }
+
+      var hlsConfig = {
+        debug: enableDebug,
+        enableWorker: true
+      }
+
+      if (Hls.isSupported()) {
+
+        if (P2Hls.isSupported()) {
+
+          var engine = new P2Hls.Engine({
+            xhrLoader: Hls.DefaultConfig.loader,
+            loader: {
+              trackerAnnounce: ["ws://ws.hitv.com"],
+              rtcConfig: {
+                iceServers: [
+                  { urls: 'stun:stun.hitv.com' }
+                ]
+              },
+              maxPeersNum: 1
+            }
+          });
+
+          $('.info').text(
+          `HLS.js: v${Hls.version}
 P2P Client: v${P2Hls.version}
 Peer Id: ${engine.peerId}
       `);
 
-      const peers = new Map
-      const updatePeersUI = () => {
-        $('.peers').html(
-          Array.from(peers.values()).map(p => `<li>${p.id}${p.remoteAddress ? '@' + p.remoteAddress + ':' + p.remotePort : ''}</li>`)
-        )
-      };
+          const peers = new Map
+          const updatePeersUI = () => {
+            $('.peers').html(Array.from(peers.values()).map(p => `<li>${p.id}${p.remoteAddress ? '@' + p.remoteAddress + ':' + p.remotePort : ''}</li>`))
+          };
 
-      const Events = P2Hls.Events;
+          const Events = P2Hls.Events;
 
-      engine.on(Events.PeerConnect, peer => {
-        peers.set(peer.id, peer)
-        updatePeersUI()
-      });
-      engine.on(Events.PeerClose, id => {
-        peers.delete(id)
-        updatePeersUI()
-      });
+          engine.on(Events.PeerConnect, peer => {
+            peers.set(peer.id, peer)
+            updatePeersUI()
+          });
+          engine.on(Events.PeerClose, id => {
+            peers.delete(id)
+            updatePeersUI()
+          });
 
-      let downloadStats = []
-      let downloadTotals = []
-      engine.on(Events.PieceBytesLoaded, (method, size) => {
-        downloadStats.push({method: method, size: size, timestamp: performance.now()});
-        downloadTotals[method] += size;
-      });
+          let downloadStats = []
+          let downloadTotals = []
 
-      let uploadStats = []
-      let uploadTotal = 0;
-      engine.on(Events.PieceBytesUploaded, (method, size) => {
-        uploadStats.push({size: size, timestamp: performance.now()});
-        uploadTotal += size;
-      });
+          engine.on(Events.PieceBytesLoaded, (method, size) => {
+            downloadStats.push({method: method, size: size, timestamp: performance.now()});
+            downloadTotals[method] += size;
+          });
 
-      var hls = new Hls({
-        loader: engine.loaderCreator(),
-        debug: false
-      });
+          let uploadStats = []
+          let uploadTotal = 0;
 
-      engine.attach(hls);
+          engine.on(Events.PieceBytesUploaded, (method, size) => {
+            uploadStats.push({size: size, timestamp: performance.now()});
+            uploadTotal += size;
+          });
 
-      // hls.loadSource("https://akamai-axtest.akamaized.net/routes/lapd-v1-acceptance/www_c4/Manifest.m3u8");
-      // hls.loadSource('http://local/st/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8');
-      hls.loadSource('http://10.1.172.163/st/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8');
+          hlsConfig.loader = engine.loaderCreator();
+        }
 
-      let video = document.getElementById("video");
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED,function(event, data) {
-        video.play();
-      });
+        console.log('Using Hls.js config:', hlsConfig);
+        window.hls = hls = new Hls(hlsConfig);
+        logStatus('Loading manifest and attaching video element...');
 
-    } else {
-      document.write("Not supported :(");
+        hls.loadSource(url);
+
+        if (engine) {
+          engine.attach(hls);
+        }
+
+        let video = document.getElementById("video");
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED,function(event, data) {
+          video.play();
+        });
+
+      }
+
+      onDemoConfigChanged()
     }
   </script>
 
