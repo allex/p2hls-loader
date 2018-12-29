@@ -2,7 +2,7 @@ import {Segment, ILoader, ILoaderCallbacks} from '@hitv/p2p-core';
 import {isAbsUrl, hash, createDebug} from '@hitv/p2p-util';
 import {Playlist} from './playlist';
 
-const debug = createDebug('p2phls:segment-manager');
+const debug = createDebug('p2phls:segment-mgr');
 
 type ILevel = hlsjs.ILevel;
 type SwarmIdGenerator = (url: string, options?: any) => string;
@@ -17,6 +17,7 @@ const defaultSettings: Settings = {
   swarmId: (url: string, options: any = {}): string => url.split('?')[0]
 };
 
+const now = Date.now || (() => +new Date);
 const genSegId = (swarmId: string, sn: number): string => `${swarmId}+${sn}`;
 
 export interface PlaylistInfo {
@@ -103,12 +104,14 @@ export class SegmentManager {
     const { swarmId } = playlist;
     const id = genSegId(swarmId, sn);
     const segment = Segment.new(id, url);
+    const start = now();
 
-    debug('[%s] fetch segment: %s', swarmId, url);
+    debug('[%s] fetch segment: %s', id, url);
 
     const wrapCallback = (callbacks: ILoaderCallbacks, cbName: keyof ILoaderCallbacks) => (...args: any[]) => {
       this.renewQueue(url);
       const f = callbacks[cbName];
+      debug('[%s] handle fetch segment (%s), time elapsed %dms', id, cbName, now() - start);
       if (f) return f(...args);
     };
 
