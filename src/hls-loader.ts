@@ -68,6 +68,8 @@ export class HlsLoaderImpl {
     const { _ctx, _cfg, _xhr } = this;
     if (_ctx) {
       _cfg.segMgr.abortSegment(_ctx.url);
+      // reset context to prevent abort duplicates.
+      this._ctx = undefined;
     }
     if (_xhr) {
       _xhr.destroy();
