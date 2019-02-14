@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <link rel="stylesheet" href="//s2.analysys.cn/libs/??normalize/6.0.0/normalize.min.css,font-awesome/4.7.0/css/font-awesome.min.css,-/@analysys/reset.css@1.0.0">
 <!--[if lt IE 9]><script src="//s1.hitv.com/libs/??es5-shim/4.5.10/es5-shim.min.js,es5-shim/4.5.10/es5-sham.min.js"></script><![endif]-->
-<script src="//s1.hitv.com/libs/??es6-shim/0.34.2/es6-shim.min.js,es7-shim/1.0.0/es7-shim.min.js,es-promise/1.0.1/promise.polyfill.min.js,es6-weakmap/1.0.0/index.js"></script>
+<script src="//s1.hitv.com/libs/??es6-shim/0.34.2/es6-shim.min.js,es7-shim/1.0.0/es7-shim.min.js,es-promise/1.0.1/promise.polyfill.min.js,es6-weakmap/1.0.0/index.js,jquery/1.12.4/jquery.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.js"></script>
-<script src="//s1.hitv.com/libs/??jquery/1.12.4/jquery.min.js,hls-loader/latest/hls-loader.min.js"></script>
+<script src="//s3.hitv.com/libs/hls-loader/latest/hls-loader.min.js"></script>
 <style>
   body {
     line-height: 1.2; }
@@ -17,6 +17,7 @@
   ul {
     list-style-type: disc; padding-left: 20px; margin: 10px 0; }
   .full {
+    overflow: hidden;
     background-color: rgb(38, 38, 38);
     color: #fff; }
   .full .videoCentered {
@@ -31,21 +32,20 @@
     float: left;
     width: 99%;
     margin: 3px;
-    padding: 3px;
+    padding: 0;
     color: inherit;
     border: 0;
     background: transparent;
-    font-size: 10px; }
+    font-size: .8em; }
   .innerControls input {
     font-weight: normal;
     float: right;
     cursor: pointer; }
   .center {
-    width: 70%;
-    min-width: 615px;
+    max-width: 1000px;
+    padding: 3px;
+    margin: 10px auto;
     overflow: hidden;
-    margin-left: auto;
-    margin-right: auto;
     display: block; }
   .videoCentered {
     max-width: 70%;
@@ -54,25 +54,31 @@
     display: block; }
 
   #controls {
-    width: 70%;
-    min-width: 615px;
-    padding: 3px;
-    margin: 12px auto 12px auto;
-    overflow: hidden;
+    opacity: .15;
+    transition: opacity .2s cubic-bezier(0.46, 1.24, 1, 1);
+    padding: 10px 20px; }
+  #controls:hover {
+    opacity: .8; }
+  #controls .inter {
     border: 1px dashed;
     border-radius: 3px; }
+  #controls a {
+    transition: all .2s;
+    opacity: 0.4; }
+  #controls a:hover {
+    opacity: 1; }
   #streamURL {
-    font-size: 12px;
+    font-size: 0.8em;
     color: #7e54ab;
     border-radius: 3px; }
   #streamURL:hover {
     background: aliceblue; }
   #streamPermalink {
     word-break: break-all; }
-  #inf {
-    margin-top: 20px; }
-  #inf .peers, #inf .info {
-    font-size: 11px;
+  #controls .inf {
+    margin-top: 0px; }
+  #controls .inf .peers, #controls .info {
+    font-size: 0.7em;
     font-family: inherit;
     line-height: 1.3em;
     margin-top: 3px; }
@@ -81,31 +87,29 @@
 </head>
 <body>
 <div class="main-container">
-
   <div id="controls">
-    <input id="streamURL" class="innerControls" type=text value="" placeholder="Please type a valid m3u8 url..." />
-    <label class="innerControls">
-      Enable HLS.js debug logging: <input id="enableDebug" type="checkbox" checked="">
-    </label>
-    <label class="innerControls">
-      Full screen: <input id="fullScr" type="checkbox" checked="">
-    </label>
-    <label class="innerControls">
-      Permalink:&nbsp; <span id="streamPermalink" style="width: 50%"></span>
-    </label>
+    <div class="center inter">
+      <input id="streamURL" class="innerControls" type=text value="" placeholder="Please type a valid m3u8 url..." />
+      <label class="innerControls">
+        Enable HLS.js debug logging: <input id="enableDebug" type="checkbox" checked="">
+      </label>
+      <label class="innerControls">
+        Full screen: <input id="fullScr" type="checkbox" checked="">
+      </label>
+      <label class="innerControls">
+        Permalink:&nbsp; <span id="streamPermalink" style="width: 50%"></span>
+      </label>
+    </div>
+    <div class="center inf">
+      <h3>INFO</h3>
+      <pre class="info"></pre>
+      <h3>PEERS</h3>
+      <ul class="peers"></ul>
+      <h3>STREAMS</h3>
+      <ul class="sts"></ul>
+    </div>
   </div>
-
   <video class="videoCentered" id="video" controls muted></video>
-
-  <div class="center" id="inf">
-    <h3>INFO</h3>
-    <pre class="info"></pre>
-    <h3>PEERS</h3>
-    <ul class="peers"></ul>
-    <h3>STREAMS</h3>
-    <ul class="sts"></ul>
-  </div>
-
 </div>
 
 <script src="./main.js"></script>

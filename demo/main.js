@@ -1,3 +1,5 @@
+/* global $: true, Hls: true, P2Hls: true */
+
 let demoConfig = getURLParam('cfg', null);
 if (demoConfig) {
   demoConfig = JSON.parse(atob(demoConfig));
@@ -8,7 +10,7 @@ if (demoConfig) {
   };
 }
 
-const DEFAULT_STREAM_URL = 'http://10.1.172.163/st/x36xhzz/url_4/193039199_mp4_h264_aac_7.m3u8'
+const DEFAULT_STREAM_URL = 'https://bitdash-a.akamaihd.net/content/sintel/hls/video/1500kbit.m3u8'
 
 let sourceURL = decodeURIComponent(getURLParam('u', DEFAULT_STREAM_URL));
 let hls, engine
@@ -22,7 +24,7 @@ $('#streamURL')
     loadSelectedStream();
   });
 
-;[ 'enableDebug' ].forEach(k => {
+[ 'enableDebug' ].forEach(k => {
   $(`#${k}`)
     .prop('checked', !!demoConfig[k])
     .click(function () {
@@ -71,6 +73,23 @@ function getURLParam(sParam, defaultValue) {
   return defaultValue;
 }
 
+function truncate (s, length) {
+  var sb = [], l = s.length
+  var suffix = suffix === undefined ? '...' : suffix
+  length = l > length ? length - suffix.length : length
+  for (var i = 0, n = 0, step; i <= length; i++) {
+    if (i >= l) break
+    step = s.charCodeAt(i) < 0x80 ? 1 : 2
+    if (n + step > length) {
+      sb.push(suffix)
+      break
+    }
+    n += step
+    sb.push(s.charAt(i))
+  }
+  return sb.join('')
+}
+
 function getDemoConfigQs() {
   var url = $('#streamURL').val();
   var serializedDemoConfig = btoa(JSON.stringify(demoConfig));
@@ -80,8 +99,12 @@ function getDemoConfigQs() {
 function onDemoConfigChanged() {
   var baseURL = document.URL.split('?')[0];
   var permalinkURL = baseURL + getDemoConfigQs();
-  $('#streamPermalink').html('<a href="' + permalinkURL + '">' + permalinkURL + '</a>');
+  $('#streamPermalink').html('<a href="' + permalinkURL + '">' + truncate(permalinkURL, 52) + '</a>');
   history.pushState(demoConfig, document.title, permalinkURL);
+}
+
+function handleUnsupported() {
+  alert('Browser not supported, use lateast chrome or safari!');
 }
 
 function loadSelectedStream() {
@@ -90,7 +113,7 @@ function loadSelectedStream() {
     return;
   }
 
-  url = $('#streamURL').val();
+  let url = $('#streamURL').val();
 
   if (!url) {
     logError('stream url empty')
@@ -125,14 +148,14 @@ function loadSelectedStream() {
       engine = new P2Hls.Engine({
         xhrLoader: Hls.DefaultConfig.loader,
         loader: {
-          trackerAnnounce: ["ws://ws.hitv.com"],
+          trackerAnnounce: [ `${location.protocol.replace('http', 'ws')}//signal.hitv.com` ],
           rtcConfig: {
             iceServers: [
               { urls: 'stun:stun.hitv.com' }
             ]
           },
           cacheSize: '1gb',
-          maxPeersNum: 2
+          maxPeerNumber: 2
         },
         segments: {
           swarmId: (playlistUrl) => {
