@@ -26,14 +26,15 @@ const banner = (name, short = false) => {
 }
 
 const resolve = p => path.resolve(__dirname, '.', p)
+const plugin = (name, ctor) => ctor ? (ctor.$name = name, ctor) : name
 
 const plugins = [
-  builtins,
-  'resolve',
-  typescript,
-  'commonjs',
-  babel,
-  globals
+  plugin('builtins', builtins),
+  plugin('resolve'),
+  plugin('typescript', typescript),
+  plugin('commonjs'),
+  plugin('babel', babel),
+  plugin('globals', globals)
 ]
 
 export default {

@@ -1,7 +1,7 @@
 {
   "name": "@hitv/hls-loader",
   "description": "P2P loader for hls.js integration.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Allex Wang <allex.wxn@gmail.com>",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -42,7 +42,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.1",
-    "rollup-plugin-babel": "latest",
+    "rollup-plugin-babel": "~4.3.2",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-typescript2": "^0",
     "ts-mockito": "^2.3.0",
