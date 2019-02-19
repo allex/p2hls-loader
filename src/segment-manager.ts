@@ -130,7 +130,6 @@ export class SegmentManager {
    * Update the play _queue in order to sync with the player real segment.
    */
   syncSegment(url: string): void {
-    debug('sync segment: %s', url);
     if (this._queue.length) {
       this._loader.abort(url);
     }

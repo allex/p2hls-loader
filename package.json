@@ -1,10 +1,11 @@
 {
   "name": "@hitv/hls-loader",
   "description": "P2P loader for hls.js integration.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Allex Wang <allex.wxn@gmail.com>",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "repository": "allex/p2hls-loader",
   "keywords": [
     "p2p",
     "peer-to-peer",
@@ -26,8 +27,8 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hitv/p2p-core": "~0",
-    "@hitv/p2p-util": "~1"
+    "@hitv/p2p-core": "~0.0.11",
+    "@hitv/p2p-util": "~1.0.5"
   },
   "devDependencies": {
     "@allex/rollup-plugin-node-globals": "^0.0.2",
