@@ -1,0 +1,53 @@
+{
+  "name": "p2hls-loader",
+  "description": "A simple demo for m3u8 accelerator integrated with p2p stream.",
+  "version": "0.0.3",
+  "author": "Allex Wang <allex.wxn@gmail.com>",
+  "main": "main.js",
+  "repository": "allex/p2hls-loader",
+  "keywords": [
+    "p2p",
+    "peer-to-peer",
+    "webrtc",
+    "torrent",
+    "bittorrent",
+    "webtorrent",
+    "video",
+    "mse",
+    "player",
+    "hls",
+    "hlsjs"
+  ],
+  "scripts": {
+    "build": "git co master ./demo && cp ./demo/hlsjs.html ./index.html && npx rollup-worker -c",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@hitv/p2p-core": "~0.0.12",
+    "@hitv/p2p-util": "~1.0.6"
+  },
+  "devDependencies": {
+    "@allex/rollup-plugin-node-globals": "^0.0.2",
+    "@allex/typescript": "^3",
+    "@babel/core": "latest",
+    "@babel/plugin-transform-runtime": "^7.2.0",
+    "@babel/preset-env": "latest",
+    "@babel/runtime": "latest",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.5.4",
+    "husky": "^1.1.2",
+    "mkdirp": "^0.5.1",
+    "mocha": "^5.2.0",
+    "rimraf": "^2.6.1",
+    "rollup-plugin-babel": "~4.3.2",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-typescript2": "^0",
+    "ts-mockito": "^2.3.0",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.5.0"
+  },
+  "license": "MIT",
+  "files": [
+    "lib"
+  ]
+}
